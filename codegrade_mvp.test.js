@@ -6,6 +6,7 @@ import AppFunctional from './frontend/components/AppFunctional'
 import { render, fireEvent, screen } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 
+
 jest.setTimeout(1000) // default 5000 too long for Codegrade
 const waitForOptions = { timeout: 100 }
 const queryOptions = { exact: false }
@@ -30,6 +31,7 @@ const updateStatefulSelectors = document => {
   email = document.querySelector('#email')
 }
 
+// function to test all of the squares for the correct values
 const testSquares = (squares, activeIdx) => {
   squares.forEach((square, idx) => {
     if (idx === activeIdx) {

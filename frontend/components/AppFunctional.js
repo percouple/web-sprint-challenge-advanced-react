@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import axios from 'axios'
 
 // Suggested initial states
@@ -6,7 +6,6 @@ const initialMessage = ''
 const initialEmail = ''
 const initialSteps = 0
 const initialIndex = 4 // the index the "B" is at
-const dummyPostData = { "x": 1, "y": 2, "steps": 3, "email": "lad@ygaga.com" };
 
 export default function AppFunctional(props) {
   // THE FOLLOWING HELPERS ARE JUST RECOMMENDATIONS.
@@ -15,6 +14,7 @@ export default function AppFunctional(props) {
   let [currentIndex, setCurrentIndex] = useState(initialIndex);
   let [moveCount, setMoveCount] = useState(initialSteps);
   let [errorMessage, setErrorMessage] = useState(initialMessage);
+
 
   function getXY(currentIndex) {
     // It it not necessary to have a state to track the coordinates.
@@ -43,7 +43,7 @@ export default function AppFunctional(props) {
     // returns the fully constructed string.
     let { x, y } = getXY(currentIndex)
 
-    return `Coordinates (${x}, ${y})`;
+    return `${x}, ${y}`;
   }
 
   function reset() {
@@ -51,6 +51,7 @@ export default function AppFunctional(props) {
     setInputEmail(initialEmail);
     setCurrentIndex(initialIndex);
     setMoveCount(initialSteps);
+    setErrorMessage('');
   }
 
   function getNextIndex(direction) {
@@ -114,11 +115,18 @@ export default function AppFunctional(props) {
   function move(evt) {
     // This event handler can use the helper above to obtain a new index for the "B",
     // and change any states accordingly.
-    const direction = evt.target.innerText;
-    setCurrentIndex(getNextIndex(direction))
-    if (currentIndex !== getNextIndex(direction)) {
-      setMoveCount(moveCount + 1);
-    }
+    const direction = evt.target.textContent;
+    setCurrentIndex(prevIndex => {
+
+      // Get new index after the button has been pressed
+      const newIndex = getNextIndex(direction)
+
+      // Count incrementor
+      if (newIndex !== prevIndex) {
+        setMoveCount(prevCount => prevCount + 1);
+      }
+      return newIndex;
+    });
   }
 
   function onChange(evt) {
@@ -131,7 +139,6 @@ export default function AppFunctional(props) {
     evt.preventDefault();
     // Group in post object state
     let postObj = { x: `${getXY(currentIndex).x}`, y: `${getXY(currentIndex).y}`, steps: `${moveCount}`, email: inputEmail };
-    console.log(JSON.stringify(postObj))
     axios.post('http://localhost:9000/api/result', postObj)
       .then((res) => {
         setErrorMessage(res.data.message)
@@ -139,21 +146,22 @@ export default function AppFunctional(props) {
       .catch((err) => {
         setErrorMessage(err.response.data.message)
       })
-    reset();
+    setInputEmail(initialEmail);
+    setErrorMessage('');
   }
 
 
   return (
     <div id="wrapper" className={props.className}>
       <div className="info">
-        <h3 id="coordinates" >{`Coordinates (${getXY(currentIndex).x}, ${getXY(currentIndex).y})`}</h3>
-        <h3 id="steps">You moved {moveCount} times</h3>
+        <h3 id="coordinates" >Coordinates ({getXYMessage()})</h3>
+        <h3 id="steps">You moved {moveCount} time{moveCount === 1 ? '' : 's'}</h3>
       </div>
       <div id="grid">
         {
           [0, 1, 2, 3, 4, 5, 6, 7, 8].map(idx => (
             <div key={idx} className={`square${idx === currentIndex ? ' active' : ''}`}>
-              {idx === currentIndex ? 'B' : null}
+              {idx === currentIndex ? "B" : null}
             </div>
           ))
         }
